@@ -167,7 +167,6 @@ void delete_1(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 			break;
 		}
 		printf("i+q = %d , value = %d  hash_size = %d\n", i+q, value, hash->size);
-		//(h_func(&(hash->arr[i+q]), hash->size) == value)
 		if((i+q < hash->size) && (hash->arr[i+q].size != -1)){
 			printf("BOOM");
 			if((h_func(&(hash->arr[i+q]), hash->size) == value)){
@@ -186,7 +185,6 @@ void delete_1(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 				break;
 			}
 		else if(i+q >= hash->size){
-			//printf("ABA");
 			hash->arr[i].size = -1;
 			free(hash->arr[i].data);
 			break;
@@ -198,6 +196,7 @@ void delete(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 	int n = h_find(*hash, &data, h_func);
 	int value = h_func(&data, hash->size);
 	int i = n, j = n;
+	int flag = 0, flag2 = 0;
 	while(hash->arr[i].size != -1){
 		if(i+q >= hash->size){
 			free(hash->arr[j].data);
@@ -208,9 +207,12 @@ void delete(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 			if(h_func(&(hash->arr[i+q]),hash->size) == value){
 				//printf("AAA");
 				//free(hash->arr[j].data);
+				flag2++;
+				if(flag == 0){
+					hash->collision -= 1;
+					flag++;
+				}
 				hash->arr[j] = hash->arr[i+q];
-				//print(hash->arr[j]);
-				//printf("\n");
 				i += q;
 				j = i;
 				if(i >= hash->size){
@@ -222,6 +224,10 @@ void delete(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 			}
 			else{
 				i += q;
+				if(flag2 == 1){
+					hash->collision -= 1;
+					flag2++;
+				}
 				if(i >= hash->size){
 					free(hash->arr[i+q].data);
 					hash->arr[i+q].size = -1;
@@ -230,6 +236,10 @@ void delete(Hash * hash, Data data, int (*h_func)(Data *, size_t)){
 			}
 		}
 		else{
+			if(flag2 == 1){
+					hash->collision -= 1;
+					flag2++;
+			}
 			free(hash->arr[j].data);
 			hash->arr[j].size = -1;
 			break;
@@ -319,16 +329,16 @@ int main(int argc, char **argv)
 	int find = h_find(hash, &G, h_hash2);
 	printf("%d\n", find);
 	//h_print(hash, print);
-	printf("A\n");
+	//printf("A\n");
 	delete(&hash, A, h_hash2);
 	//h_print(hash, print);
-	printf("B\n");
+	//printf("B\n");
 	delete(&hash, B, h_hash2);
 	//h_print(hash, print);
-	printf("C\n");
+	//printf("C\n");
 	delete(&hash, C, h_hash2);
 	//h_print(hash, print);
-	printf("D\n");
+	//printf("D\n");
 	delete(&hash, D, h_hash2);
 	delete(&hash, E, h_hash2);
 	delete(&hash, F, h_hash2);
@@ -339,6 +349,7 @@ int main(int argc, char **argv)
 	delete(&hash, A4, h_hash2);
 	//printf("\n");
 	h_print(hash, print);
+	printf("%d\n", hash.collision);
 	return 0;
 }
 
